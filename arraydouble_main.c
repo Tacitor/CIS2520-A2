@@ -12,7 +12,67 @@
 
 int processFasta(char *filename, double *timeTaken)
 {
-	return 0; // TEMP RETURN PLEASE DON'T FORGET TO CHANGE THIS LUKAS
+	FILE *fp;
+	FASTArecord fRecord;
+	int lineNumber = 0, recordNumber = 0, status;
+	int eofSeen = 0;
+	clock_t startTime, endTime;
+
+	fp = fopen(filename, "r");
+	if (fp == NULL)
+	{
+		fprintf(stderr, "Failure opening %s : %s\n",
+				filename, strerror(errno));
+		return -1;
+	}
+
+	/** record the time now, before we do the work */
+	startTime = clock();
+
+	do
+	{
+		/** print a '.' every 10,000 records so
+		 * we know something is happening */
+		if ((recordNumber % 10000) == 0)
+		{
+			printf(".");
+			fflush(stdout);
+		}
+
+		fastaInitializeRecord(&fRecord); // HERE
+
+		status = fastaReadRecord(fp, &fRecord); // HERE
+		if (status == 0)
+		{
+			eofSeen = 1;
+		}
+		else if (status > 0)
+		{
+			lineNumber += status;
+			recordNumber++;
+			// fastaPrintRecord(stdout, &fRecord);
+			fastaClearRecord(&fRecord); // HERE
+		}
+		else
+		{
+			fprintf(stderr, "status = %d\n", status);
+			fprintf(stderr, "Error: failure at line %d of '%s'\n",
+					lineNumber, filename);
+			return -1;
+		}
+
+	} while (!eofSeen);
+	printf(" %d FASTA records\n", recordNumber);
+
+	/** record the time now, when the work is done,
+	 *  and calculate the difference*/
+	endTime = clock();
+
+	(*timeTaken) = ((double)(endTime - startTime)) / CLOCKS_PER_SEC;
+
+	fclose(fp);
+
+	return recordNumber;
 }
 
 int processFastaRepeatedly(
@@ -58,7 +118,7 @@ void usage(char *progname)
 }
 
 /**
- * Program main function
+ * Program mainline
  */
 int main(int argc, char **argv)
 {

@@ -18,11 +18,13 @@ int processFasta(char *filename, double *timeTaken)
 	int eofSeen = 0;
 	clock_t startTime, endTime;
 
+	int fastaRecordsArraySize = 128; // start out with 128 records
+	FASTArecord fastaRecordsArr[fastaRecordsArraySize];
+
 	fp = fopen(filename, "r");
 	if (fp == NULL)
 	{
-		fprintf(stderr, "Failure opening %s : %s\n",
-				filename, strerror(errno));
+		fprintf(stderr, "Failure opening %s : %s\n", filename, strerror(errno));
 		return -1;
 	}
 
@@ -39,9 +41,9 @@ int processFasta(char *filename, double *timeTaken)
 			fflush(stdout);
 		}
 
-		fastaInitializeRecord(&fRecord); // HERE
+		fastaInitializeRecord(&fRecord);
 
-		status = fastaReadRecord(fp, &fRecord); // HERE
+		status = fastaReadRecord(fp, &fRecord);
 		if (status == 0)
 		{
 			eofSeen = 1;
@@ -50,14 +52,30 @@ int processFasta(char *filename, double *timeTaken)
 		{
 			lineNumber += status;
 			recordNumber++;
-			// fastaPrintRecord(stdout, &fRecord);
-			fastaClearRecord(&fRecord); // HERE
+
+			// TEMP print the first 10 records
+			/*
+			if (recordNumber < 10)
+			{
+				printf("\n\n");
+				fastaPrintRecord(stdout, &fRecord);
+			}
+			*/
+
+			// check to see if we have run out of room
+			if (recordNumber >= fastaRecordsArraySize)
+			{
+				// panic make array bigger
+			}
+			else
+			{
+				fastaRecordsArr[recordNumber - 1] = fRecord; // store the record in the array at the index used to count the number of records starting at 0
+			}
 		}
 		else
 		{
 			fprintf(stderr, "status = %d\n", status);
-			fprintf(stderr, "Error: failure at line %d of '%s'\n",
-					lineNumber, filename);
+			fprintf(stderr, "Error: failure at line %d of '%s'\n", lineNumber, filename);
 			return -1;
 		}
 
@@ -71,6 +89,12 @@ int processFasta(char *filename, double *timeTaken)
 	(*timeTaken) = ((double)(endTime - startTime)) / CLOCKS_PER_SEC;
 
 	fclose(fp);
+
+	// now go through and deallocate the array
+	for (int i = 0; i < recordNumber; i++)
+	{
+		fastaClearRecord(&fastaRecordsArr[i]);
+	}
 
 	return recordNumber;
 }
@@ -133,33 +157,27 @@ int main(int argc, char **argv)
 			{
 				if (i >= argc)
 				{
-					fprintf(stderr,
-							"Error: need argument for repeats requested\n");
+					fprintf(stderr, "Error: need argument for repeats requested\n");
 					return 1;
 				}
 				if (sscanf(argv[++i], "%ld", &repeatsRequested) != 1)
 				{
-					fprintf(stderr,
-							"Error: cannot parse repeats requested from '%s'\n",
-							argv[i]);
+					fprintf(stderr, "Error: cannot parse repeats requested from '%s'\n", argv[i]);
 					return 1;
 				}
 			}
 			else
 			{
-				fprintf(stderr,
-						"Error: unknown option '%s'\n", argv[i]);
+				fprintf(stderr, "Error: unknown option '%s'\n", argv[i]);
 				usage(argv[0]);
 			}
 		}
 		else
 		{
-			recordsProcessed = processFastaRepeatedly(argv[i],
-													  repeatsRequested);
+			recordsProcessed = processFastaRepeatedly(argv[i], repeatsRequested);
 			if (recordsProcessed < 0)
 			{
-				fprintf(stderr, "Error: Processing '%s' failed -- exitting\n",
-						argv[i]);
+				fprintf(stderr, "Error: Processing '%s' failed -- exitting\n", argv[i]);
 				return 1;
 			}
 			printf("%d records processed from '%s'\n",

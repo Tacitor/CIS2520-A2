@@ -18,8 +18,8 @@ int processFasta(char *filename, double *timeTaken)
 	int eofSeen = 0;
 	clock_t startTime, endTime;
 
-	int fastaRecordsArraySize = 128; // start out with 128 records
-	FASTArecord fastaRecordsArr[fastaRecordsArraySize];
+	int fastaRecordsArraySize = 128;																   // start out with 128 records
+	FASTArecord *fastaRecordsArr = (FASTArecord *)malloc(fastaRecordsArraySize * sizeof(FASTArecord)); // FASTArecord fastaRecordsArr[fastaRecordsArraySize];
 
 	fp = fopen(filename, "r");
 	if (fp == NULL)
@@ -53,24 +53,28 @@ int processFasta(char *filename, double *timeTaken)
 			lineNumber += status;
 			recordNumber++;
 
-			// TEMP print the first 10 records
-			/*
-			if (recordNumber < 10)
-			{
-				printf("\n\n");
-				fastaPrintRecord(stdout, &fRecord);
-			}
-			*/
-
 			// check to see if we have run out of room
 			if (recordNumber >= fastaRecordsArraySize)
 			{
 				// panic make array bigger
+				// double the fastaRecordsArraySize
+				fastaRecordsArraySize *= 2;
+
+				// find a new chuck of memory for the existing data that is big enough to store double the data
+				fastaRecordsArr = (FASTArecord *)realloc(fastaRecordsArr, (sizeof(FASTArecord) * fastaRecordsArraySize));
 			}
-			else
-			{
-				fastaRecordsArr[recordNumber - 1] = fRecord; // store the record in the array at the index used to count the number of records starting at 0
-			}
+
+			// store the record in the array at the index used to count the number of records starting at 0
+			// start by initilizing the record at this index in the array
+			fastaInitializeRecord(&(fastaRecordsArr[recordNumber - 1]));
+
+			// now copy over the data
+			fastaRecordsArr[recordNumber - 1].id = fRecord.id;
+			fastaRecordsArr[recordNumber - 1].description = strdup(fRecord.description);
+			fastaRecordsArr[recordNumber - 1].sequence = strdup(fRecord.sequence);
+
+			// deallocate the strings in the buffer fRecord
+			fastaClearRecord(&fRecord);
 		}
 		else
 		{
@@ -80,7 +84,8 @@ int processFasta(char *filename, double *timeTaken)
 		}
 
 	} while (!eofSeen);
-	printf(" %d FASTA records\n", recordNumber);
+	// TODO: Finish this print statement
+	printf(" %d FASTA records -- NUMBER allocated (NUMBER%% waste)\n", recordNumber);
 
 	/** record the time now, when the work is done,
 	 *  and calculate the difference*/
@@ -90,11 +95,26 @@ int processFasta(char *filename, double *timeTaken)
 
 	fclose(fp);
 
-	// now go through and deallocate the array
+	// for (int i = 0; i < recordNumber;)
+	// {
+	// 	for (int j = 0; j < 75; j++)
+	// 	{
+	// 		printf("\n\n");
+	// 		fastaPrintRecord(stdout, &fastaRecordsArr[i]);
+	//		i++;
+	// 	}
+	// 	getchar();
+	// }
+
+	// now go through and clear the records in the array
+	// do not deallocate because the momory space was alloc'd at the time of the array as a block
 	for (int i = 0; i < recordNumber; i++)
 	{
 		fastaClearRecord(&fastaRecordsArr[i]);
 	}
+
+	// now deallocate the array itself
+	free(fastaRecordsArr);
 
 	return recordNumber;
 }

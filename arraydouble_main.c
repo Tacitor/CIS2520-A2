@@ -85,7 +85,7 @@ int processFasta(char *filename, double *timeTaken)
 
 	} while (!eofSeen);
 	// TODO: Finish this print statement
-	printf(" %d FASTA records -- NUMBER allocated (NUMBER%% waste)\n", recordNumber);
+	printf(" %d FASTA records -- %d allocated (%.3f%% waste)\n", recordNumber, fastaRecordsArraySize, ((fastaRecordsArraySize - recordNumber) / (double)fastaRecordsArraySize) * 100);
 
 	/** record the time now, when the work is done,
 	 *  and calculate the difference*/
@@ -95,16 +95,19 @@ int processFasta(char *filename, double *timeTaken)
 
 	fclose(fp);
 
-	// for (int i = 0; i < recordNumber;)
-	// {
-	// 	for (int j = 0; j < 75; j++)
-	// 	{
-	// 		printf("\n\n");
-	// 		fastaPrintRecord(stdout, &fastaRecordsArr[i]);
-	//		i++;
-	// 	}
-	// 	getchar();
-	// }
+	// debug the records
+	/*
+	for (int i = 0; i < recordNumber;)
+	{
+		// for (int j = 0; j < 75; j++)
+		// {
+		printf("\n\n");
+		fastaPrintRecord(stdout, &fastaRecordsArr[i]);
+		i++;
+		//}
+		//getchar();
+	}
+	*/
 
 	// now go through and clear the records in the array
 	// do not deallocate because the momory space was alloc'd at the time of the array as a block
@@ -137,13 +140,13 @@ int processFastaRepeatedly(
 		totalTimeInSeconds += timeThisIterationInSeconds;
 	}
 
-	printf("%lf seconds taken for processing total\n", totalTimeInSeconds);
+	printf("%.3lf seconds taken for processing total\n", totalTimeInSeconds);
 
 	totalTimeInSeconds /= (double)repeatsRequested;
 
 	minutesPortion = (int)(totalTimeInSeconds / 60);
 	totalTimeInSeconds = totalTimeInSeconds - (60 * minutesPortion);
-	printf("On average: %d minutes, %lf second per run\n",
+	printf("On average: %d minutes, %.3lf second per run\n",
 		   minutesPortion, totalTimeInSeconds);
 
 	return status;

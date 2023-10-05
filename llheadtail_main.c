@@ -33,7 +33,10 @@ int processFasta(char *filename, double *timeTaken)
 	int eofSeen = 0;
 	clock_t startTime, endTime;
 
-	LLvNode *headOnlyLL = NULL;			// the head of the Linked List that holds the records
+	// the head of the Linked List that holds the records
+	// and another pointer that points to the tail of the same LL.
+	// start the tail pointing at the head
+	LLvNode *llHeadPtr = NULL, *llTailPtr = NULL;
 	LLvNode *newLLvNode = NULL;			// a pointer to a new node used in creation
 	FASTArecord *newFastaRecord = NULL; // a pointer to a new fasta record that can be used to instaticate new records before storing them in the Linked List
 
@@ -80,8 +83,16 @@ int processFasta(char *filename, double *timeTaken)
 			// make a new node
 			newLLvNode = llNewNode(newFastaRecord->description, (void *)newFastaRecord);
 
+			// get the head if it is not saved yet
+			if (llHeadPtr == NULL)
+			{
+				llHeadPtr = newLLvNode;
+			}
+
 			// append the new FASTA record to the LL
-			headOnlyLL = llAppend(headOnlyLL, newLLvNode);
+			llAppend(llTailPtr, newLLvNode);
+			// update the tail to the new record that was just appeneded
+			llTailPtr = newLLvNode;
 
 			// deallocate the strings in the buffer fRecord
 			fastaClearRecord(&fRecord);
@@ -105,7 +116,7 @@ int processFasta(char *filename, double *timeTaken)
 	fclose(fp);
 
 	// free all the memory that was malloc'd in this function
-	llFree(headOnlyLL, deleteFastaRecord, NULL);
+	llFree(llHeadPtr, deleteFastaRecord, NULL);
 
 	return recordNumber;
 }

@@ -14,7 +14,7 @@
 
 ## State of Implementation
 
-    Incomplete
+    Partially complete
 
 ## Summary of Learned Outcomes
 

@@ -36,9 +36,9 @@ ADEXE = arraydouble
 ## Define the set of object files we need to build each executable.
 ## If you write more files, be sure to add them in here
 LOOBJS		= llloadonly_main.o fasta_read.o
-HOOBJS		= llheadonly_main.o
-HTOBJS		= llheadtail_main.o
-ADOBJS		= arraydouble_main.o
+HOOBJS		= llheadonly_main.o fasta_read.o LLvNode.o
+HTOBJS		= llheadtail_main.o fasta_read.o LLvNode.o
+ADOBJS		= arraydouble_main.o fasta_read.o
 
 
 ##

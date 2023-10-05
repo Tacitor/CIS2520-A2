@@ -84,7 +84,6 @@ int processFasta(char *filename, double *timeTaken)
 		}
 
 	} while (!eofSeen);
-	// TODO: Finish this print statement
 	printf(" %d FASTA records -- %d allocated (%.3f%% waste)\n", recordNumber, fastaRecordsArraySize, ((fastaRecordsArraySize - recordNumber) / (double)fastaRecordsArraySize) * 100);
 
 	/** record the time now, when the work is done,

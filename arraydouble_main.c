@@ -109,7 +109,7 @@ int processFasta(char *filename, double *timeTaken)
 	*/
 
 	// now go through and clear the records in the array
-	// do not deallocate because the momory space was alloc'd at the time of the array as a block
+	// do not deallocate because the memory space was alloc'd at the time of the array as a block
 	for (int i = 0; i < recordNumber; i++)
 	{
 		fastaClearRecord(&fastaRecordsArr[i]);
